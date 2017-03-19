@@ -1,0 +1,63 @@
+﻿<Page
+    x:Class="CAndHDL.MainPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="using:CAndHDL"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    mc:Ignorable="d">
+
+    <Page.Resources>
+        <Style TargetType="TextBlock">
+            <Setter Property="Margin" Value="5, 5, 5, 5" />
+        </Style>
+
+        <Style TargetType="TextBox">
+            <Setter Property="Margin" Value="5, 5, 5, 5" />
+        </Style>
+
+        <Style TargetType="CalendarDatePicker">
+            <Setter Property="Margin" Value="5, 5, 5, 5" />
+        </Style>
+
+        <Style TargetType="CheckBox">
+            <Setter Property="Margin" Value="5, 5, 5, 5" />
+        </Style>
+
+        <Style TargetType="Button">
+            <Setter Property="Margin" Value="5, 5, 5, 5" />
+        </Style>
+    </Page.Resources>
+    
+    <Grid Background="{ThemeResource ApplicationPageBackgroundThemeBrush}" x:Name="ColumnarView">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="*" />
+            <RowDefinition Height="*" />
+            <RowDefinition Height="*" />
+            <RowDefinition Height="*" />
+            <RowDefinition Height="*" />
+            <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="*" />
+            <ColumnDefinition Width="*" />
+            <ColumnDefinition Width="*" />
+        </Grid.ColumnDefinitions>
+
+        <TextBlock Grid.Row="0" Grid.Column="0" x:Name="cStartDateText" Text="Date début" />
+        <TextBlock Grid.Row="0" Grid.Column="1"  x:Name="cEndDateText" Text="Date fin" />
+
+        <CalendarDatePicker Grid.Row="1" Grid.Column="0" x:Name="cStartDate" Date="{x:Bind MainPageViewModel.StartDate, Mode=TwoWay}" />
+        <CalendarDatePicker Grid.Row="1" Grid.Column="1" x:Name="cEndDate" Date="{x:Bind MainPageViewModel.EndDate, Mode=TwoWay}" />
+        <Button Grid.Row="1" Grid.Column="2" x:Name="cTodayButton" Content="Aujourd'hui" Command="{x:Bind Path=MainPageViewModel.SetTodayAsEndDate}" />
+
+        <CheckBox Grid.Row="2" Grid.Column="0" Grid.ColumnSpan="3" x:Name="cDLAllCB" Content="Tout télécharger" />
+
+        <CheckBox Grid.Row="3" Grid.Column="0" Grid.ColumnSpan="3" x:Name="cDLFromLastTimeCB" Content="Tout télécharger depuis le dernier téléchargement" />
+
+        <TextBox Grid.Row="4" Grid.Column="0" Grid.ColumnSpan="2" x:Name="cPath" MaxHeight="1" Text="{Binding MainPageViewModel.Path, Mode=TwoWay}" />
+        <Button Grid.Row="4" Grid.Column="2" x:Name="cPathButton" Content="Emplacement" />
+
+        <Button Grid.Row="5" Grid.Column="0" x:Name="cDownload" Content="Télécharger" />
+    </Grid>
+</Page>
