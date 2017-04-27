@@ -96,7 +96,15 @@
     <Compile Include="App.xaml.cs">
       <DependentUpon>App.xaml</DependentUpon>
     </Compile>
+    <Compile Include="Exceptions\ComicNumberNotFoundException.cs" />
+    <Compile Include="Exceptions\ComicNameNotFoundException.cs" />
+    <Compile Include="Exceptions\ComicURLNotFoundException.cs" />
+    <Compile Include="Exceptions\ComicDateNotFoundException.cs" />
+    <Compile Include="Helpers\ControlsHelper.cs" />
+    <Compile Include="Helpers\DownloadHelper.cs" />
     <Compile Include="Command.cs" />
+    <Compile Include="Converter\EmptyStringToBoolean.cs" />
+    <Compile Include="Model\Comic.cs" />
     <Compile Include="Model\DataModel.cs" />
     <Compile Include="ViewModel\MainPageViewModel.cs" />
     <Compile Include="View\MainPage.xaml.cs">

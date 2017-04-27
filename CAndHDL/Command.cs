@@ -3,19 +3,24 @@ using System.Windows.Input;
 
 namespace CAndHDL
 {
+    /// <summary>
+    /// Command class used for a button that sends no parameters to
+    /// drives it. Instead, the class takes 2 parameters in its construction
+    /// to determine if the command is executable or not.
+    /// </summary>
     public class Command : ICommand
     {
-        /// <summary>Method to execute if the command is executable</summary>
+        /// <summary>Action to execute in case the command is executable</summary>
         private Action MethodToExecute = null;
 
-        /// <summary>Method to determine if the command is executable</summary>
+        /// <summary>Method to determine whether to command is executable or not</summary>
         private Func<bool> MethodToDetermineCanExecute = null;
 
         /// <summary>
-        /// Defaut constructor
+        /// Parameterized constructor
         /// </summary>
-        /// <param name="methodToExecute">Method to execute if the command is executable</param>
-        /// <param name="methodToDetermineCanExecute">Method to determine if the command is executable</param>
+        /// <param name="methodToExecute">Method to execute in case the command is executable</param>
+        /// <param name="methodToDetermineCanExecute">Method to determine whether to command is executable or not</param>
         public Command(Action methodToExecute, Func<bool> methodToDetermineCanExecute)
         {
             this.MethodToExecute = methodToExecute;
@@ -23,10 +28,10 @@ namespace CAndHDL
         }
 
         /// <summary>
-        /// Determine if the action associated to the command is executable
+        /// Determine whether the command is executable or not
         /// </summary>
-        /// <param name="parameter">TODO</param>
-        /// <returns></returns>
+        /// <param name="parameter">optional parameters</param>
+        /// <returns>True if the method can be executed, false otherwise</returns>
         public bool CanExecute(object parameter)
         {
             if (MethodToDetermineCanExecute == null)
@@ -35,29 +40,27 @@ namespace CAndHDL
             }
             else
             {
-                // TODO: adapt the CanExecute
                 return this.MethodToDetermineCanExecute();
             }
         }
 
         /// <summary>
-        /// Code to execute if the command is executable
+        /// Execute the command
         /// </summary>
-        /// <param name="parameter"></param>
+        /// <param name="parameter">optional parameters</param>
         public void Execute(object parameter)
         {
             this.MethodToExecute();
         }
 
-        /// <summary>Command event handler</summary>
+        /// <summary>Event handler</summary>
         public event EventHandler CanExecuteChanged;
 
         /// <summary>
-        /// Notify the subscriber
+        /// Raise the event indicating that something changed and we need
+        /// to check if the command is now executable or not
         /// </summary>
-        /// <param name="sender">TODO</param>
-        /// <param name="e">TODO</param>
-        void RaiseCanExecuteChanged(object sender, object e)
+        public void RaiseCanExecuteChanged()
         {
             this.CanExecuteChanged?.Invoke(this, EventArgs.Empty);
         }

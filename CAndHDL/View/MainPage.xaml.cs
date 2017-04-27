@@ -15,6 +15,7 @@ namespace CAndHDL
         public MainPage()
         {
             this.InitializeComponent();
+            MainPageViewModel.Init();
         }
     }
 }
