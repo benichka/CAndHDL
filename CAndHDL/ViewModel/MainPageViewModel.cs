@@ -3,6 +3,8 @@ using System.ComponentModel;
 using System.Runtime.CompilerServices;
 using CAndHDL.Helpers;
 using CAndHDL.Model;
+using Windows.ApplicationModel.DataTransfer;
+using Windows.Storage;
 
 namespace CAndHDL.ViewModel
 {
@@ -99,6 +101,10 @@ namespace CAndHDL.ViewModel
             set
             {
                 SetProperty(ref this._Path, value);
+
+                // We force the command to raise its CanExecuteChanged because
+                // the path is not updated in the UI
+                CopyPath.RaiseCanExecuteChanged();
             }
         }
 
@@ -137,6 +143,11 @@ namespace CAndHDL.ViewModel
         /// Command associated with the button that download the comics
         /// </summary>
         public Command StartDL { get; set; }
+
+        /// <summary>
+        /// Command associated with the button that copy the path
+        /// </summary>
+        public Command CopyPath { get; private set; }
         #endregion commands
 
         /// <summary>
@@ -147,6 +158,8 @@ namespace CAndHDL.ViewModel
             this.SetTodayAsEndDate = new Command(this.TodayAsEndDate, this.CheckIfDateAreChoosable);
 
             this.StartDL = new Command(this.DL, this.CheckIfDLIsPossible);
+
+            this.CopyPath = new Command(this.CopyPathAction, this.CheckIfPathCopyPossible);
 
             this.DataModel = new DataModel();
 
@@ -176,6 +189,21 @@ namespace CAndHDL.ViewModel
         private void TodayAsEndDate()
         {
             this.EndDate = DateTime.Now;
+        }
+
+        /// <summary>
+        /// Copy the path where the comic will be downloaded
+        /// </summary>
+        private void CopyPathAction()
+        {
+            IProgress<string> progress = new Progress<string>(s => this.InfoMessage = s);
+
+            var dataPackage = new DataPackage();
+            dataPackage.SetText(this.Path);
+
+            Clipboard.SetContent(dataPackage);
+
+            progress.Report("Path copied");
         }
 
         /// <summary>
@@ -249,6 +277,15 @@ namespace CAndHDL.ViewModel
         // TODO: retrieve comics
 
         /// <summary>
+        /// Check if the path copy is possible
+        /// </summary>
+        /// <returns>true if that's the case, false otherwise</returns>
+        private bool CheckIfPathCopyPossible()
+        {
+            return !String.IsNullOrWhiteSpace(this.Path);
+        }
+
+        /// <summary>
         /// Initialisation: get the first and last comic date and number, etc.
         /// </summary>
         public async void Init()
@@ -257,8 +294,18 @@ namespace CAndHDL.ViewModel
 
             progress.Report("Initialising...");
 
+            StorageFolder folder = null;
+            try
+            {
+                folder = await StorageFolder.GetFolderFromPathAsync(@"C:\Users\ben\Desktop\CAndH\");
+            }
+            catch (Exception ex)
+            {
+                progress.Report($"Unable to set the desired folder: {ex.Message}");
+            }
+
             // Initialise the root folder
-            var selectedFolder = await DownloadHelper.InitRootFolder(null);
+            var selectedFolder = await DownloadHelper.InitRootFolder(folder);
             this.Path = selectedFolder.Path;
 
             // Init: extract number and date for the oldest comic

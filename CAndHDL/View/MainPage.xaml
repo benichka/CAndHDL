@@ -59,7 +59,17 @@
         <CheckBox Grid.Row="3" Grid.Column="0" Grid.ColumnSpan="3" x:Name="cDLFromLastTimeCB" Content="Tout télécharger depuis le dernier téléchargement" IsChecked="{x:Bind MainPageViewModel.DLSinceLastTime, Mode=TwoWay}" />
 
         <TextBlock Grid.Row="4" Grid.Column="0" Grid.ColumnSpan="2" x:Name="cPath" MaxLines="3" VerticalAlignment="Center" TextWrapping="WrapWholeWords" Text="{x:Bind MainPageViewModel.Path, Mode=OneWay}" />
-        <Button Grid.Row="4" Grid.Column="2" x:Name="cPathButton" Content="Emplacement" Click="{x:Bind MainPageViewModel.ChooseFolder}" />
+        <StackPanel Grid.Row="4" Grid.Column="2" Orientation="Horizontal">
+            <Button x:Name="cPathButton" Click="{x:Bind MainPageViewModel.ChooseFolder}">
+                <TextBlock Text="Emplacement" />
+            </Button>
+            <Button x:Name="cCopyButton" Command="{x:Bind Path=MainPageViewModel.CopyPath}">
+                <StackPanel Orientation="Horizontal">
+                    <SymbolIcon Symbol="Copy" />
+                    <TextBlock Text="Copier" />
+                </StackPanel>
+            </Button>
+        </StackPanel>
 
         <StackPanel Grid.Row="5" Grid.Column="0" Grid.ColumnSpan="3">
             <Button x:Name="cDownload" Content="Télécharger" Command="{x:Bind Path=MainPageViewModel.StartDL}" />
