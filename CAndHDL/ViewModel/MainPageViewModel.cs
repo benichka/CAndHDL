@@ -64,7 +64,6 @@ namespace CAndHDL.ViewModel
             set
             {
                 SetProperty(ref this._DLAll, value);
-                this.SetTodayAsEndDate.RaiseCanExecuteChanged();
                 this.DatesAreChoosable = this.CheckIfDateAreChoosable();
             }
         }
@@ -77,7 +76,6 @@ namespace CAndHDL.ViewModel
             set
             {
                 SetProperty(ref this._DLSinceLastTime, value);
-                this.SetTodayAsEndDate.RaiseCanExecuteChanged();
                 this.DatesAreChoosable = this.CheckIfDateAreChoosable();
             }
         }
@@ -101,10 +99,6 @@ namespace CAndHDL.ViewModel
             set
             {
                 SetProperty(ref this._Path, value);
-
-                // We force the command to raise its CanExecuteChanged because
-                // the path is not updated in the UI
-                CopyPath.RaiseCanExecuteChanged();
             }
         }
 
@@ -254,15 +248,30 @@ namespace CAndHDL.ViewModel
         /// <returns>true if that's the case, false otherwise</returns>
         private bool CheckDates()
         {
-            if ((!this.StartDate.HasValue || !this.EndDate.HasValue) || DateTimeOffset.Compare(this.StartDate.Value.Date, this.EndDate.Value.Date) <= 0)
+            if ((!this.StartDate.HasValue || !this.EndDate.HasValue))
             {
-                this.ErrorMessage = string.Empty;
-                return true;
+                this.ErrorMessage = "La date de début et la date de fin doivent être valorisées";
+                return false;
             }
-            else
+            else if (DateTimeOffset.Compare(this.StartDate.Value.Date, this.EndDate.Value.Date) > 0)
             {
                 this.ErrorMessage = "La date de début doit être inférieure ou égale à la date de fin";
                 return false;
+            }
+            else
+            {
+                if (this.DateOldestComic != DateTime.MinValue && DateTime.Compare(this.StartDate.Value.DateTime, this.DateOldestComic) < 0)
+                {
+                    this.StartDate = this.DateOldestComic;
+                    this.InfoMessage = "La date de début a été remplacée par la date du premier comic";
+                }
+                if (this.DateLatestComic != DateTime.MinValue && DateTime.Compare(this.EndDate.Value.DateTime, this.DateLatestComic) > 0)
+                {
+                    this.EndDate = this.DateLatestComic;
+                    this.InfoMessage = "La date de fin a été remplacée par la date du dernier comic";
+                }
+                this.ErrorMessage = string.Empty;
+                return true;
             }
         }
 
@@ -272,7 +281,12 @@ namespace CAndHDL.ViewModel
         /// <returns>true if that's the case, false otherwise</returns>
         private bool CheckIfDLIsPossible()
         {
-            return true;
+            var DLIsPossible = true;
+            if (!this.CheckDates())
+            {
+                DLIsPossible = false;
+            } 
+            return DLIsPossible;
         }
         // TODO: retrieve comics
 
@@ -283,6 +297,16 @@ namespace CAndHDL.ViewModel
         private bool CheckIfPathCopyPossible()
         {
             return !String.IsNullOrWhiteSpace(this.Path);
+        }
+
+        /// <summary>
+        /// Check if every command are executable
+        /// </summary>
+        private void CheckCommands()
+        {
+            this.CopyPath.RaiseCanExecuteChanged();
+            this.StartDL.RaiseCanExecuteChanged();
+            this.SetTodayAsEndDate.RaiseCanExecuteChanged();
         }
 
         /// <summary>
@@ -389,6 +413,7 @@ namespace CAndHDL.ViewModel
             {
                 storage = value;
                 this.RaisedPropertyChanged(propertyName);
+                this.CheckCommands();
                 return true;
             }
         }
