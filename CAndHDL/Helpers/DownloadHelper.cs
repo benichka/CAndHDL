@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Globalization;
 using System.IO;
+using System.Linq;
 using System.Net.Http;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
@@ -25,8 +26,8 @@ namespace CAndHDL.Helpers
         /// <summary>Root URL for the comic images</summary>
         private static readonly string URL_DL_ROOT = "http://files.explosm.net/comics/";
 
-        /// <summary>URL for the archived comics</summary>
-        private static readonly string URL_ARCHIVE = "http://explosm.net/comics/archive/";
+        /// <summary>Root URL for the archived comics</summary>
+        private static readonly string URL_ROOT_ARCHIVE = "http://explosm.net/comics/archive/";
         #endregion URLs
 
         #region regex patterns
@@ -112,7 +113,7 @@ namespace CAndHDL.Helpers
             // Download the comic
             using (var client = new HttpClient())
             {
-                progress.Report($"Downloading comic image number {comic.Number}, date {comic.Date}...");
+                progress.Report($"Downloading comic image number {comic.Number}, date {comic.Date.ToString("d")}...");
 
                 var comicAsByte = await client.GetByteArrayAsync(comic.DlURL);
 
@@ -162,7 +163,7 @@ namespace CAndHDL.Helpers
         /// <param name="comicDate">Comic date</param>
         /// <param name="path">Destination path</param>
         /// <param name="progress">Provider for progress update</param>
-        public static async Task<Comic> GetComic(DateTime comicDate, string path, IProgress<string> progress)
+        private static async Task<Comic> GetComic(DateTime comicDate, string path, IProgress<string> progress)
         {
             progress.Report($"Getting comic {comicDate.ToString("d")}...");
 
@@ -179,7 +180,7 @@ namespace CAndHDL.Helpers
         /// <param name="comicNumber">Comic number</param>
         /// <param name="progress">Provider for progress update</param>
         /// <returns>The downloaded comic information</returns>
-        public static async Task<Comic> GetComic(uint comicNumber, IProgress<string> progress)
+        private static async Task<Comic> GetComic(uint comicNumber, IProgress<string> progress)
         {
             progress.Report($"Getting comic {comicNumber}...");
 
@@ -207,15 +208,17 @@ namespace CAndHDL.Helpers
         {
             // It's not directly possible to download an image based on its date; therefore
             // the interval is calculated with the first and last date and then downloaded
-            // based on the numbers
+            // based on the numbers.
+            // Because of that, some comics could not be downloaded because in the early years of C&H some
+            // comics in the date d+1 got a number inferior to the comic in the date d
             progress.Report($"Getting comics coming from {dateMin.ToString("d")} to {dateMax.ToString("d")}");
 
+            // TODO: if there is no comic for first, take the first next number that exist (with a loop until?)
+            // TODO: if there is no comic for last, take the first previous number that exist
             var first = await GetComicNumber(dateMin, progress);
             var last = await GetComicNumber(dateMax, progress);
 
             await GetComics(first, last, progress);
-
-            throw new NotImplementedException();
         }
 
         /// <summary>
@@ -227,11 +230,14 @@ namespace CAndHDL.Helpers
         public static async Task GetComics(uint numMin, uint numMax, IProgress<string> progress)
         {
             progress.Report($"Getting comics coming from {numMin} to {numMax}");
+
+            Comic latestDLedComic = null;
+
             for (uint i = numMin; i <= numMax; i++)
             {
                 try
                 {
-                    await GetComic(i, progress);
+                   latestDLedComic = await GetComic(i, progress);
                 }
                 // Exceptions regarding an unknow number in the serie, a date that cannot be parsed, etc. -> we only log it
                 catch (HttpRequestException httpRequestEx) { progress.Report(httpRequestEx.Message); }
@@ -245,6 +251,11 @@ namespace CAndHDL.Helpers
                 }
             }
             progress.Report("Comics downloaded");
+
+            if (latestDLedComic != null)
+            {
+                await StoreLatestDownload(latestDLedComic);
+            }
         }
         #endregion comic download
 
@@ -409,7 +420,18 @@ namespace CAndHDL.Helpers
             var pattern_url_cur = @"<a href=""(.*)\/(?<number>[0-9]*)\/"">" + year + "." + month + "." + day;
 
             // Page download
-            var responsePage = await DownloadPage(new Uri(URL_ARCHIVE, UriKind.Absolute), progress);
+            // for some reason, the URL to the archive for each month that is the same month as the current date
+            // is URL_ROOT_ARCHIVE/yyyy. Otherwise, it's URL_ROOT_ARCHIVE/yyyy/MM
+            var URLArchive = string.Empty;
+            if (month == DateTime.Now.ToString("MM"))
+            {
+                URLArchive = URL_ROOT_ARCHIVE + year;
+            }
+            else
+            {
+                URLArchive = URL_ROOT_ARCHIVE + year + "/" + month;
+            }
+            var responsePage = await DownloadPage(new Uri(URLArchive, UriKind.Absolute), progress);
 
             // Extracting comic page URL
             var comicNumberMatch = Regex.Match(responsePage, pattern_url_cur);
@@ -473,5 +495,48 @@ namespace CAndHDL.Helpers
             return comicDate;
         }
         #endregion get comic properties
+
+        #region latest download information
+        /// <summary>
+        /// Write the latest comic downloaded information as a file in the root folder.
+        /// The file is named this way : latest_[comic number]_[comic date]
+        /// </summary>
+        /// <param name="latestComic">Latest comic information</param>
+        private static async Task StoreLatestDownload(Comic latestComic)
+        {
+            // delete the previous file
+            var previousInfo = (await rootFolder.GetFilesAsync()).Where(file => file.DisplayName.StartsWith("latest_")).FirstOrDefault();
+            if (previousInfo != null)
+            {
+                await previousInfo.DeleteAsync();
+            }
+
+            // Create an empty file with the number and the date
+            await rootFolder.CreateFileAsync($"latest_{latestComic.Number}_{latestComic.Date.ToString("yyyyMMdd", CultureInfo.InvariantCulture)}", CreationCollisionOption.ReplaceExisting);
+        }
+
+        /// <summary>
+        /// Retrieve the latest comic downloaded information
+        /// </summary>
+        /// <returns>The latest comic downloaded information</returns>
+        public static async Task<Comic> GetLatestDownload()
+        {
+            Comic latestComic = null;
+
+            var infoAsFile = (await rootFolder.GetFilesAsync()).Where(file => file.DisplayName.StartsWith("latest_")).FirstOrDefault();
+            if (infoAsFile != null)
+            {
+                Regex regExtractInfo = new Regex(@"latest_(?<number>[0-9]*)_(?<date>[0-9]*)");
+                var match = regExtractInfo.Match(infoAsFile.Name);
+                latestComic = new Comic()
+                {
+                    Number = Convert.ToUInt32(match.Groups["number"].Value),
+                    Date = DateTime.ParseExact(match.Groups["date"].Value, "yyyyMMdd", CultureInfo.InvariantCulture)
+                };
+            }
+
+            return latestComic;
+        }
+        #endregion latest download information
     }
 }

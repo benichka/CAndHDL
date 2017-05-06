@@ -236,9 +236,41 @@ namespace CAndHDL.ViewModel
         /// <summary>
         /// Download the comics in the interval
         /// </summary>
-        private void DL()
+        private async void DL()
         {
-            // TODO: make it async and DL the comics in the interval
+            IProgress<string> progress = new Progress<string>(s => this.InfoMessage = s);
+
+            if (this.DLAll.HasValue && this.DLAll.Value)
+            {
+                // The box "DL All" is checked: download all comics since the beginning to the end
+                progress.Report("Downloading all comics...");
+                //await DownloadHelper.GetComics(this.NumOldestComic, this.NumLatestComic, progress);
+            }
+            else if (this.DLSinceLastTime.HasValue && this.DLSinceLastTime.Value)
+            {
+                // Download all comics since last time
+                // TODO: DL since last time
+                var latestComicInfo = await DownloadHelper.GetLatestDownload();
+
+                // If there is no info for the latest download (first time or the file was deleted), the download starts
+                // at the first comic
+                if (latestComicInfo == null)
+                {
+                    latestComicInfo = new Comic()
+                    {
+                        Number = this.NumOldestComic,
+                        Date = this.DateOldestComic
+                    };
+                }
+                progress.Report($"Downloading all comics since last time: {latestComicInfo.Date.ToString("d")}");
+                await DownloadHelper.GetComics(latestComicInfo.Number, this.NumLatestComic, progress);
+            }
+            else
+            {
+                // Classic mode: download all comics in the interval
+                progress.Report($"Downloading comics from {this.StartDate.Value.ToString("d")} to {this.EndDate.Value.ToString("d")}");
+                await DownloadHelper.GetComics(this.StartDate.Value.DateTime, this.EndDate.Value.DateTime, progress);
+            }
             //DownloadHelper.GetComic(DateTime.Now);
         }
 
