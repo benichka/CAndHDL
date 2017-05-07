@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 using CAndHDL.Exceptions;
 using CAndHDL.Model;
 using Windows.Storage;
+using Windows.Storage.Search;
 
 namespace CAndHDL.Helpers
 {
@@ -504,8 +505,8 @@ namespace CAndHDL.Helpers
         /// <param name="latestComic">Latest comic information</param>
         private static async Task StoreLatestDownload(Comic latestComic)
         {
-            // delete the previous file
-            var previousInfo = (await rootFolder.GetFilesAsync()).Where(file => file.DisplayName.StartsWith("latest_")).FirstOrDefault();
+            // delete the previous file if there is one
+            var previousInfo = await GetLatestInfoFile();
             if (previousInfo != null)
             {
                 await previousInfo.DeleteAsync();
@@ -523,11 +524,11 @@ namespace CAndHDL.Helpers
         {
             Comic latestComic = null;
 
-            var infoAsFile = (await rootFolder.GetFilesAsync()).Where(file => file.DisplayName.StartsWith("latest_")).FirstOrDefault();
-            if (infoAsFile != null)
+            var latest = await GetLatestInfoFile();
+            if (latest != null)
             {
                 Regex regExtractInfo = new Regex(@"latest_(?<number>[0-9]*)_(?<date>[0-9]*)");
-                var match = regExtractInfo.Match(infoAsFile.Name);
+                var match = regExtractInfo.Match(latest.Name);
                 latestComic = new Comic()
                 {
                     Number = Convert.ToUInt32(match.Groups["number"].Value),
@@ -536,6 +537,32 @@ namespace CAndHDL.Helpers
             }
 
             return latestComic;
+        }
+
+        /// <summary>
+        /// Get the file containing the latest download information
+        /// </summary>
+        /// <returns>The file if there is one; null otherwise</returns>
+        private static async Task<StorageFile> GetLatestInfoFile()
+        {
+            // "Quick and dirty"
+            // var infoAsFile = (await rootFolder.GetFilesAsync()).Where(file => file.DisplayName.StartsWith("latest_")).FirstOrDefault();
+
+            StorageFile result = null;
+
+            var queryOptions = new QueryOptions();
+            queryOptions.ApplicationSearchFilter = $"System.FileName:latest_*";
+
+            StorageFileQueryResult queryResult = rootFolder.CreateFileQueryWithOptions(queryOptions);
+
+            var files = await queryResult.GetFilesAsync();
+            if (files.Count > 0)
+            {
+                // In case there are multiple files, only the first one is returned
+                result = files.First();
+            }
+
+            return result;
         }
         #endregion latest download information
     }

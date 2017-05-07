@@ -392,25 +392,6 @@ namespace CAndHDL.ViewModel
                 progress.Report(getLatestPageEx.Message);
             }
 
-            // TODO: delete this
-            //try
-            //{
-            //    await DownloadHelper.GetComics(1000, 1010, progress);
-            //}
-            //catch (Exception getComicExc)
-            //{
-            //    progress.Report(getComicExc.Message);
-            //}
-
-            try
-            {
-                await DownloadHelper.GetComics(new DateTime(1998, 1, 1), new DateTime(1998, 1, 10), progress);
-            }
-            catch (Exception getComicExc)
-            {
-                progress.Report(getComicExc.Message);
-            }
-
             progress.Report("Initialised");
         }
 
