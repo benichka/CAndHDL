@@ -54,9 +54,9 @@
         <CalendarDatePicker Grid.Row="1" Grid.Column="1" x:Name="cEndDate" Date="{x:Bind MainPageViewModel.EndDate, Mode=TwoWay}" IsEnabled="{x:Bind MainPageViewModel.DatesAreChoosable, Mode=OneWay}" />
         <Button Grid.Row="1" Grid.Column="2" x:Name="cTodayButton" Content="Aujourd'hui" Command="{x:Bind Path=MainPageViewModel.SetTodayAsEndDate}" />
 
-        <CheckBox Grid.Row="2" Grid.Column="0" Grid.ColumnSpan="3" x:Name="cDLAllCB" Content="Tout télécharger" IsChecked="{x:Bind MainPageViewModel.DLAll, Mode=TwoWay}" />
+        <CheckBox Grid.Row="2" Grid.Column="0" Grid.ColumnSpan="3" x:Name="cDLAllCB" Content="Tout télécharger" IsChecked="{x:Bind MainPageViewModel.DLAll, Mode=TwoWay}" IsEnabled="{x:Bind MainPageViewModel.DLAllIsChoosable, Mode=OneWay}" />
 
-        <CheckBox Grid.Row="3" Grid.Column="0" Grid.ColumnSpan="3" x:Name="cDLFromLastTimeCB" Content="Tout télécharger depuis le dernier téléchargement" IsChecked="{x:Bind MainPageViewModel.DLSinceLastTime, Mode=TwoWay}" />
+        <CheckBox Grid.Row="3" Grid.Column="0" Grid.ColumnSpan="3" x:Name="cDLFromLastTimeCB" Content="Tout télécharger depuis le dernier téléchargement" IsChecked="{x:Bind MainPageViewModel.DLSinceLastTime, Mode=TwoWay}" IsEnabled="{x:Bind MainPageViewModel.DLSinceLastTimeIsChoosable, Mode=OneWay}" />
 
         <TextBlock Grid.Row="4" Grid.Column="0" Grid.ColumnSpan="2" x:Name="cPath" MaxLines="3" VerticalAlignment="Center" TextWrapping="WrapWholeWords" Text="{x:Bind MainPageViewModel.Path, Mode=OneWay}" />
         <StackPanel Grid.Row="4" Grid.Column="2" Orientation="Horizontal">

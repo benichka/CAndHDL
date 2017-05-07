@@ -65,6 +65,7 @@ namespace CAndHDL.ViewModel
             {
                 SetProperty(ref this._DLAll, value);
                 this.DatesAreChoosable = this.CheckIfDateAreChoosable();
+                this.CheckIfCheckboxesAreChoosable();
             }
         }
 
@@ -77,6 +78,7 @@ namespace CAndHDL.ViewModel
             {
                 SetProperty(ref this._DLSinceLastTime, value);
                 this.DatesAreChoosable = this.CheckIfDateAreChoosable();
+                this.CheckIfCheckboxesAreChoosable();
             }
         }
 
@@ -88,6 +90,28 @@ namespace CAndHDL.ViewModel
             set
             {
                 SetProperty(ref this._DatesAreChoosable, value);
+            }
+        }
+
+        private bool _DLAllIsChoosable;
+        /// <summary>Indicate if the "DL All" checkbox is choosable</summary>
+        public bool DLAllIsChoosable
+        {
+            get { return this._DLAllIsChoosable; }
+            set
+            {
+                SetProperty(ref this._DLAllIsChoosable, value);
+            }
+        }
+
+        private bool _DLSinceLastTimeIsChoosable;
+        /// <summary>Indicate if the "DL since last time" checkbox is choosable</summary>
+        public bool DLSinceLastTimeIsChoosable
+        {
+            get { return this._DLSinceLastTimeIsChoosable; }
+            set
+            {
+                SetProperty(ref this._DLSinceLastTimeIsChoosable, value);
             }
         }
 
@@ -207,6 +231,15 @@ namespace CAndHDL.ViewModel
         private bool CheckIfDateAreChoosable()
         {
             return ((this.DLAll.HasValue && !this.DLAll.Value) && (this.DLSinceLastTime.HasValue && !this.DLSinceLastTime.Value));
+        }
+
+        /// <summary>
+        /// Check if the checkboxes are choosable
+        /// </summary>
+        private void CheckIfCheckboxesAreChoosable()
+        {
+            this.DLAllIsChoosable = !(this.DLSinceLastTime.HasValue && this.DLSinceLastTime.Value);
+            this.DLSinceLastTimeIsChoosable = !(this.DLAll.HasValue && this.DLAll.Value);
         }
 
         /// <summary>
