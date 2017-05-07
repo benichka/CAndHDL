@@ -20,6 +20,9 @@ namespace CAndHDL.Helpers
         /// <summary>Root folder where the comic will be downloaded</summary>
         private static StorageFolder rootFolder = null;
 
+        /// <summary>Application data folder for the application</summary>
+        private static StorageFolder appDataFolder = null;
+
         #region URLs
         /// <summary>Root URL for the comic</summary>
         private static readonly string URL_ROOT = "http://explosm.net/comics/";
@@ -56,20 +59,35 @@ namespace CAndHDL.Helpers
         /// <param name="desiredFolder">Desired folder where the user wants to store comics</param>
         public static async Task<StorageFolder> InitRootFolder(StorageFolder desiredFolder)
         {
-            if (desiredFolder != null)
-            {
-                rootFolder = desiredFolder;
-            }
-            else
-            {
-                rootFolder = await ApplicationData.Current.LocalFolder.CreateFolderAsync("CAndHDL", CreationCollisionOption.OpenIfExists);
-            }
+            appDataFolder = await ApplicationData.Current.LocalFolder.CreateFolderAsync("CAndHDL", CreationCollisionOption.OpenIfExists);
+
+            rootFolder = ChangeDLFolder(desiredFolder);
 
             return rootFolder;
         }
         #endregion init
 
         #region download
+
+        /// <summary>
+        /// Change the download location
+        /// </summary>
+        /// <param name="desiredFolder">Desired folder where the user wants to store comics</param>
+        /// <returns>The chosen folder</returns>
+        public static StorageFolder ChangeDLFolder(StorageFolder desiredFolder)
+        {
+            if (desiredFolder != null)
+            {
+                rootFolder = desiredFolder;
+            }
+            else
+            {
+                rootFolder = appDataFolder;
+            }
+
+            return rootFolder;
+        }
+
         /// <summary>
         /// Download a comic page
         /// </summary>
@@ -513,7 +531,7 @@ namespace CAndHDL.Helpers
             }
 
             // Create an empty file with the number and the date
-            await rootFolder.CreateFileAsync($"latest_{latestComic.Number}_{latestComic.Date.ToString("yyyyMMdd", CultureInfo.InvariantCulture)}", CreationCollisionOption.ReplaceExisting);
+            await appDataFolder.CreateFileAsync($"latest_{latestComic.Number}_{latestComic.Date.ToString("yyyyMMdd", CultureInfo.InvariantCulture)}", CreationCollisionOption.ReplaceExisting);
         }
 
         /// <summary>
@@ -546,14 +564,14 @@ namespace CAndHDL.Helpers
         private static async Task<StorageFile> GetLatestInfoFile()
         {
             // "Quick and dirty"
-            // var infoAsFile = (await rootFolder.GetFilesAsync()).Where(file => file.DisplayName.StartsWith("latest_")).FirstOrDefault();
+            // var infoAsFile = (await appDataFolder.GetFilesAsync()).Where(file => file.DisplayName.StartsWith("latest_")).FirstOrDefault();
 
             StorageFile result = null;
 
             var queryOptions = new QueryOptions();
             queryOptions.ApplicationSearchFilter = $"System.FileName:latest_*";
 
-            StorageFileQueryResult queryResult = rootFolder.CreateFileQueryWithOptions(queryOptions);
+            StorageFileQueryResult queryResult = appDataFolder.CreateFileQueryWithOptions(queryOptions);
 
             var files = await queryResult.GetFilesAsync();
             if (files.Count > 0)

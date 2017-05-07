@@ -229,7 +229,7 @@ namespace CAndHDL.ViewModel
                 FutureAccessList.AddOrReplace("PickedFolderToken", folder);
                 this.Path = folder.Path;
 
-                await DownloadHelper.InitRootFolder(folder);
+                DownloadHelper.ChangeDLFolder(folder);
             }
         }
 
@@ -249,21 +249,30 @@ namespace CAndHDL.ViewModel
             else if (this.DLSinceLastTime.HasValue && this.DLSinceLastTime.Value)
             {
                 // Download all comics since last time
-                // TODO: DL since last time
+                Comic firstComicToDL = null;
+
                 var latestComicInfo = await DownloadHelper.GetLatestDownload();
 
                 // If there is no info for the latest download (first time or the file was deleted), the download starts
                 // at the first comic
                 if (latestComicInfo == null)
                 {
-                    latestComicInfo = new Comic()
+                    firstComicToDL = new Comic()
                     {
                         Number = this.NumOldestComic,
                         Date = this.DateOldestComic
                     };
                 }
-                progress.Report($"Downloading all comics since last time: {latestComicInfo.Date.ToString("d")}");
-                await DownloadHelper.GetComics(latestComicInfo.Number, this.NumLatestComic, progress);
+                else
+                {
+                    firstComicToDL = new Comic()
+                    {
+                        Number = (latestComicInfo.Number + 1),
+                        Date = latestComicInfo.Date.AddDays(1)
+                    };
+                }
+                progress.Report($"Downloading all comics starting on: {firstComicToDL.Date.ToString("d")}");
+                await DownloadHelper.GetComics(firstComicToDL.Number, this.NumLatestComic, progress);
             }
             else
             {
