@@ -9,6 +9,7 @@ using CAndHDL.Exceptions;
 using CAndHDL.Model;
 using Windows.Storage;
 using Windows.Storage.Search;
+using System.Threading;
 
 namespace CAndHDL.Helpers
 {
@@ -68,7 +69,6 @@ namespace CAndHDL.Helpers
         #endregion init
 
         #region download
-
         /// <summary>
         /// Change the download location
         /// </summary>
@@ -222,8 +222,9 @@ namespace CAndHDL.Helpers
         /// </summary>
         /// <param name="dateMin">Minimum date (included)</param>
         /// <param name="dateMax">Maximum date (included)</param>
+        /// <param name="ct">Cancellation token</param>
         /// <param name="progress">Provider for progress update</param>
-        public static async Task GetComics(DateTime dateMin, DateTime dateMax, IProgress<string> progress)
+        public static async Task GetComics(DateTime dateMin, DateTime dateMax, CancellationToken ct, IProgress<string> progress)
         {
             // It's not directly possible to download an image based on its date; therefore
             // the interval is calculated with the first and last date and then downloaded
@@ -237,7 +238,7 @@ namespace CAndHDL.Helpers
             var first = await GetComicNumber(dateMin, progress);
             var last = await GetComicNumber(dateMax, progress);
 
-            await GetComics(first, last, progress);
+            await GetComics(first, last, ct, progress);
         }
 
         /// <summary>
@@ -245,8 +246,9 @@ namespace CAndHDL.Helpers
         /// </summary>
         /// <param name="numMin">Minimum number (included)</param>
         /// <param name="numMax">Maximum number (included)</param>
+        /// <param name="ct">Cancellation token</param>
         /// <param name="progress">Provider for progress update</param>
-        public static async Task GetComics(uint numMin, uint numMax, IProgress<string> progress)
+        public static async Task GetComics(uint numMin, uint numMax, CancellationToken ct, IProgress<string> progress)
         {
             progress.Report($"Getting comics coming from {numMin} to {numMax}");
 
@@ -254,6 +256,20 @@ namespace CAndHDL.Helpers
 
             for (uint i = numMin; i <= numMax; i++)
             {
+                if (ct.IsCancellationRequested)
+                {
+                    // If a cancellation has been requested, we inform the user
+                    // and abort the process
+                    progress.Report($"Cancelled before processing comic number {i}");
+
+                    if (latestDLedComic != null)
+                    {
+                        await StoreLatestDownload(latestDLedComic);
+                    }
+
+                    return;
+                }
+
                 try
                 {
                    latestDLedComic = await GetComic(i, progress);
