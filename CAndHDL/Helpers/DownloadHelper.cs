@@ -21,6 +21,9 @@ namespace CAndHDL.Helpers
         /// <summary>Root folder where the comic will be downloaded</summary>
         private static StorageFolder rootFolder = null;
 
+        /// <summary>Roaming folder for the application; this folder will be synced between devices</summary>
+        private static StorageFolder roamingFolder = null;
+
         /// <summary>Application data folder for the application</summary>
         private static StorageFolder appDataFolder = null;
 
@@ -56,10 +59,13 @@ namespace CAndHDL.Helpers
         /// <summary>
         /// Init the storage location with a desired folder. If the desired folder is not available,
         /// the root folder is set to AppData\Local\Packages\[AppPackageName]\LocalState\CAndHDL\
+        /// the roaming folder is set to AppData\Local\Packages\[AppPackageName]\RoamingState\CAndHDL\
         /// </summary>
         /// <param name="desiredFolder">Desired folder where the user wants to store comics</param>
         public static async Task<StorageFolder> InitRootFolder(StorageFolder desiredFolder)
         {
+            roamingFolder = await ApplicationData.Current.RoamingFolder.CreateFolderAsync("CAndHDL", CreationCollisionOption.OpenIfExists);
+
             appDataFolder = await ApplicationData.Current.LocalFolder.CreateFolderAsync("CAndHDL", CreationCollisionOption.OpenIfExists);
 
             rootFolder = ChangeDLFolder(desiredFolder);
@@ -547,7 +553,7 @@ namespace CAndHDL.Helpers
             }
 
             // Create an empty file with the number and the date
-            await appDataFolder.CreateFileAsync($"latest_{latestComic.Number}_{latestComic.Date.ToString("yyyyMMdd", CultureInfo.InvariantCulture)}", CreationCollisionOption.ReplaceExisting);
+            await roamingFolder.CreateFileAsync($"latest_{latestComic.Number}_{latestComic.Date.ToString("yyyyMMdd", CultureInfo.InvariantCulture)}", CreationCollisionOption.ReplaceExisting);
         }
 
         /// <summary>
@@ -580,14 +586,14 @@ namespace CAndHDL.Helpers
         private static async Task<StorageFile> GetLatestInfoFile()
         {
             // "Quick and dirty"
-            // var infoAsFile = (await appDataFolder.GetFilesAsync()).Where(file => file.DisplayName.StartsWith("latest_")).FirstOrDefault();
+            // var infoAsFile = (await roamingFolder.GetFilesAsync()).Where(file => file.DisplayName.StartsWith("latest_")).FirstOrDefault();
 
             StorageFile result = null;
 
             var queryOptions = new QueryOptions();
             queryOptions.ApplicationSearchFilter = $"System.FileName:latest_*";
 
-            StorageFileQueryResult queryResult = appDataFolder.CreateFileQueryWithOptions(queryOptions);
+            StorageFileQueryResult queryResult = roamingFolder.CreateFileQueryWithOptions(queryOptions);
 
             var files = await queryResult.GetFilesAsync();
             if (files.Count > 0)
