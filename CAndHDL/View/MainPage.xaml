@@ -76,7 +76,10 @@
                 <Button x:Name="cDownload" Content="Télécharger" Command="{x:Bind Path=MainPageViewModel.StartDL}" />
                 <Button x:Name="cancelButton" Content="Annuler" Command="{x:Bind Path=MainPageViewModel.Cancel}" />
             </StackPanel>
-            <TextBlock x:Name="infoText" Text="{x:Bind MainPageViewModel.InfoMessage, Mode=OneWay}" />
+            <StackPanel Orientation="Horizontal">
+                <ProgressRing IsActive="{x:Bind MainPageViewModel.IsProcessing, Mode=OneWay}" Margin="10, 0, 0, 0" />
+                <TextBlock x:Name="infoText" Text="{x:Bind MainPageViewModel.InfoMessage, Mode=OneWay}" />
+            </StackPanel>
             <TextBlock x:Name="errorText" Visibility="{x:Bind MainPageViewModel.ErrorMessage, Converter={StaticResource strToBoolConv}, Mode=OneWay}" Text="{x:Bind MainPageViewModel.ErrorMessage, Mode=OneWay}" />
         </StackPanel>
     </Grid>

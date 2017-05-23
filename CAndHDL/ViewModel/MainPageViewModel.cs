@@ -152,8 +152,16 @@ namespace CAndHDL.ViewModel
         #endregion DataModel properties
 
         #region commands
+        private bool _IsProcessing;
         /// <summary>Boolean indicating whether the comics are being downloaded</summary>
-        private bool _IsProcessing = false;
+        public bool IsProcessing
+        {
+            get { return this._IsProcessing; }
+            set
+            {
+                SetProperty(ref this._IsProcessing, value);
+            }
+        }
 
         /// <summary>Cancellation token source</summary>
         private CancellationTokenSource _DLTokenSource = null;
@@ -184,7 +192,7 @@ namespace CAndHDL.ViewModel
         /// </summary>
         public MainPageViewModel()
         {
-            this._IsProcessing = false;
+            this.IsProcessing = false;
 
             this._DLTokenSource = new CancellationTokenSource();
 
@@ -223,7 +231,7 @@ namespace CAndHDL.ViewModel
         /// </summary>
         public async void Init()
         {
-            this._IsProcessing = true;
+            this.IsProcessing = true;
 
             IProgress<string> progress = new Progress<string>(s => this.InfoMessage = s);
 
@@ -271,7 +279,7 @@ namespace CAndHDL.ViewModel
                 progress.Report(getLatestPageEx.Message);
             }
 
-            this._IsProcessing = false;
+            this.IsProcessing = false;
 
             progress.Report("Initialised");
         }
@@ -330,7 +338,7 @@ namespace CAndHDL.ViewModel
         /// </summary>
         private async void DL()
         {
-            this._IsProcessing = true;
+            this.IsProcessing = true;
 
             IProgress<string> progress = new Progress<string>(s => this.InfoMessage = s);
 
@@ -375,7 +383,7 @@ namespace CAndHDL.ViewModel
                 await DownloadHelper.GetComics(this.StartDate.Value.DateTime, this.EndDate.Value.DateTime, this._DLTokenSource.Token, progress);
             }
 
-            this._IsProcessing = false;
+            this.IsProcessing = false;
 
             if (this._DLTokenSource.Token.IsCancellationRequested)
             {
@@ -394,7 +402,7 @@ namespace CAndHDL.ViewModel
 
             // The processing is stopped; this automatically disabled the cancel button,
             // so that the user can only click it once
-            this._IsProcessing = false;
+            this.IsProcessing = false;
 
             this.InfoMessage = "A cancellation has been requested";
         }
@@ -459,11 +467,11 @@ namespace CAndHDL.ViewModel
         private bool CheckIfDLIsPossible()
         {
             var DLIsPossible = true;
-            if (!this.CheckDates() && this._IsProcessing)
+            if (!this.CheckDates() && this.IsProcessing)
             {
                 DLIsPossible = false;
             } 
-            return (DLIsPossible && !this._IsProcessing);
+            return (DLIsPossible && !this.IsProcessing);
         }
 
         /// <summary>
@@ -481,7 +489,7 @@ namespace CAndHDL.ViewModel
         /// <returns>true if that's the case, false otherwise</returns>
         private bool CanCancelClick()
         {
-            return this._IsProcessing;
+            return this.IsProcessing;
         }
 
         /// <summary>
