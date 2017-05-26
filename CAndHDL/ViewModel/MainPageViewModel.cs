@@ -1,11 +1,11 @@
 ﻿using System;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
+using System.Threading;
 using CAndHDL.Helpers;
 using CAndHDL.Model;
 using Windows.ApplicationModel.DataTransfer;
 using Windows.Storage;
-using System.Threading;
 
 namespace CAndHDL.ViewModel
 {
@@ -28,11 +28,7 @@ namespace CAndHDL.ViewModel
         public DateTime DateLatestComic { get; set; }
         #endregion general information
 
-        // TODO: try to access/update the model directly
-        #region DataModel properties
-        /// <summary>Data model</summary>
-        private DataModel DataModel { get; set; }
-
+        #region properties
         private DateTimeOffset? _StartDate;
         /// <summary>Start date</summary>
         public DateTimeOffset? StartDate
@@ -149,7 +145,7 @@ namespace CAndHDL.ViewModel
                 SetProperty(ref this._InfoMessage, value);
             }
         }
-        #endregion DataModel properties
+        #endregion properties
 
         #region commands
         private bool _IsProcessing;
@@ -204,26 +200,15 @@ namespace CAndHDL.ViewModel
 
             this.CopyPath = new Command(this.CopyPathAction, this.CheckIfPathCopyPossible);
 
-            this.DataModel = new DataModel();
-
-            // TODO: retrieve the data from the precedent execution
-
-            if (this.DataModel.StartDate == null)
+            if (this.StartDate == null)
             {
-                this.DataModel.StartDate = new DateTime(2000, 1, 1);
+                this.StartDate = new DateTime(2000, 1, 1);
             }
 
-            if (this.DataModel.EndDate == null)
+            if (this.EndDate == null)
             {
-                this.DataModel.EndDate = DateTime.Now;
+                this.EndDate = DateTime.Now;
             }
-
-            // TODO: probably not necessary when the model is directly accessed
-            this.StartDate = this.DataModel.StartDate;
-            this.EndDate = this.DataModel.EndDate;
-            this.DLAll = this.DataModel.DLAll;
-            this.DLSinceLastTime = this.DataModel.DLSinceLastTime;
-            this.Path = this.DataModel.Path;
         }
 
         /// <summary>

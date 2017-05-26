@@ -104,7 +104,6 @@
     <Compile Include="Command.cs" />
     <Compile Include="Converter\EmptyStringToBoolean.cs" />
     <Compile Include="Model\Comic.cs" />
-    <Compile Include="Model\DataModel.cs" />
     <Compile Include="ViewModel\MainPageViewModel.cs" />
     <Compile Include="View\MainPage.xaml.cs">
       <DependentUpon>MainPage.xaml</DependentUpon>
