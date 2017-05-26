@@ -100,7 +100,6 @@
     <Compile Include="Exceptions\ComicNameNotFoundException.cs" />
     <Compile Include="Exceptions\ComicURLNotFoundException.cs" />
     <Compile Include="Exceptions\ComicDateNotFoundException.cs" />
-    <Compile Include="Helpers\ControlsHelper.cs" />
     <Compile Include="Helpers\DownloadHelper.cs" />
     <Compile Include="Command.cs" />
     <Compile Include="Converter\EmptyStringToBoolean.cs" />

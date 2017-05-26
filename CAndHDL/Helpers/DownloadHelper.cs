@@ -4,12 +4,12 @@ using System.IO;
 using System.Linq;
 using System.Net.Http;
 using System.Text.RegularExpressions;
+using System.Threading;
 using System.Threading.Tasks;
 using CAndHDL.Exceptions;
 using CAndHDL.Model;
 using Windows.Storage;
 using Windows.Storage.Search;
-using System.Threading;
 
 namespace CAndHDL.Helpers
 {
