@@ -209,6 +209,10 @@ namespace CAndHDL.ViewModel
             {
                 this.EndDate = DateTime.Now;
             }
+
+            this.DLAll = false;
+
+            this.DLSinceLastTime = false;
         }
 
         /// <summary>
