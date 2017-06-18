@@ -5,36 +5,34 @@ using Windows.UI.Xaml.Data;
 namespace CAndHDL.Converter
 {
     /// <summary>
-    /// Converter converting a string or a date to a visibility
+    /// Converter converting a date (DateTime) to a String
     /// </summary>
-    class EmptyStringToBoolean : IValueConverter
+    class DateToStringConverter : IValueConverter
     {
         /// <summary>
-        /// Convert a string or a date to a visibility object
+        /// Convert a string to a visibility object
         /// </summary>
-        /// <param name="value">String value</param>
+        /// <param name="value">DateTime value</param>
         /// <param name="targetType">TODO</param>
-        /// <param name="parameter">TODO</param>
+        /// <param name="parameter">The string format to display</param>
         /// <param name="language">TODO</param>
-        /// <returns>Visibility.Collapsed if the string is empty, Visibility.Visible otherwise</returns>
+        /// <returns>The DateTime converted to String with to desired format</returns>
         public object Convert(object value, Type targetType, object parameter, string language)
         {
-            if ((value as DateTimeOffset?).HasValue)
+            if (value == null)
             {
-                // The object can be a date
-                return Visibility.Visible;
+                return string.Empty;
             }
             else
             {
-                // Otherwise, consider it as a string
-                return string.IsNullOrEmpty(value as string) ? Visibility.Collapsed : Visibility.Visible;
+                return (value as DateTimeOffset?).Value.ToString(parameter.ToString());
             }
         }
 
         /// <summary>
-        /// Convert a visibility object to a string
+        /// Convert a String with a specified format to a date
         /// </summary>
-        /// <param name="value">Visibility value</param>
+        /// <param name="value">String value</param>
         /// <param name="targetType">TODO</param>
         /// <param name="parameter">TODO</param>
         /// <param name="language">TODO</param>

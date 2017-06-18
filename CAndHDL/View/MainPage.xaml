@@ -29,6 +29,8 @@
         </Style>
 
         <conv:EmptyStringToBoolean x:Key="strToBoolConv" />
+
+        <conv:DateToStringConverter x:Key="dateToStrConv" />
     </Page.Resources>
     
     <Grid Background="{ThemeResource ApplicationPageBackgroundThemeBrush}" x:Name="ColumnarView">
@@ -60,7 +62,12 @@
 
         <CheckBox Grid.Row="2" Grid.Column="0" Grid.ColumnSpan="3" x:Name="cDLAllCB" Content="Tout télécharger" IsChecked="{x:Bind MainPageViewModel.DLAll, Mode=TwoWay}" IsEnabled="{x:Bind MainPageViewModel.DLAllIsChoosable, Mode=OneWay}" />
 
-        <CheckBox Grid.Row="3" Grid.Column="0" Grid.ColumnSpan="3" x:Name="cDLFromLastTimeCB" Content="Tout télécharger depuis le dernier téléchargement" IsChecked="{x:Bind MainPageViewModel.DLSinceLastTime, Mode=TwoWay}" IsEnabled="{x:Bind MainPageViewModel.DLSinceLastTimeIsChoosable, Mode=OneWay}" />
+        <StackPanel Grid.Row="3" Grid.Column="0" Grid.ColumnSpan="3" VerticalAlignment="Center" Orientation="Horizontal">
+            <CheckBox x:Name="cDLFromLastTimeCB" Content="Tout télécharger depuis le dernier téléchargement" IsChecked="{x:Bind MainPageViewModel.DLSinceLastTime, Mode=TwoWay}" IsEnabled="{x:Bind MainPageViewModel.DLSinceLastTimeIsChoosable, Mode=OneWay}" />
+            <TextBlock x:Name="cDLFromLastTimeDateCB" VerticalAlignment="Center" Visibility="{x:Bind MainPageViewModel.LastDLDate, Converter={StaticResource strToBoolConv}, Mode=OneWay}">
+                <Run Text="(" /><Run Text="{x:Bind MainPageViewModel.LastDLDate.Value, Converter={StaticResource dateToStrConv}, ConverterParameter='d', Mode=OneWay}" /><Run Text=")" />
+            </TextBlock>
+        </StackPanel>
 
         <TextBlock Grid.Row="4" Grid.Column="0" Grid.ColumnSpan="2" x:Name="cPath" MaxLines="3" VerticalAlignment="Center" TextWrapping="WrapWholeWords" Text="{x:Bind MainPageViewModel.Path, Mode=OneWay}" />
         <StackPanel Grid.Row="4" Grid.Column="2" Orientation="Horizontal">

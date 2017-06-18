@@ -96,6 +96,7 @@
     <Compile Include="App.xaml.cs">
       <DependentUpon>App.xaml</DependentUpon>
     </Compile>
+    <Compile Include="Converter\DateToStringConverter.cs" />
     <Compile Include="Exceptions\ComicNumberNotFoundException.cs" />
     <Compile Include="Exceptions\ComicNameNotFoundException.cs" />
     <Compile Include="Exceptions\ComicURLNotFoundException.cs" />

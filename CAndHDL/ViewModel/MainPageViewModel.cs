@@ -2,6 +2,7 @@
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
 using System.Threading;
+using System.Threading.Tasks;
 using CAndHDL.Helpers;
 using CAndHDL.Model;
 using Windows.ApplicationModel.DataTransfer;
@@ -49,6 +50,18 @@ namespace CAndHDL.ViewModel
             set
             {
                 this.SetProperty(ref this._EndDate, value);
+                this.CheckDates();
+            }
+        }
+
+        private DateTimeOffset? _LastDLDate;
+        /// <summary>Last downloded date</summary>
+        public DateTimeOffset? LastDLDate
+        {
+            get { return this._LastDLDate; }
+            set
+            {
+                this.SetProperty(ref this._LastDLDate, value);
                 this.CheckDates();
             }
         }
@@ -210,6 +223,8 @@ namespace CAndHDL.ViewModel
                 this.EndDate = DateTime.Now;
             }
 
+            this.LastDLDate = null;
+
             this.DLAll = false;
 
             this.DLSinceLastTime = false;
@@ -267,6 +282,9 @@ namespace CAndHDL.ViewModel
             {
                 progress.Report(getLatestPageEx.Message);
             }
+
+            // Retrieved latest download info
+            await this.GetLatestDLDate();
 
             this.IsProcessing = false;
 
@@ -372,6 +390,9 @@ namespace CAndHDL.ViewModel
                 await DownloadHelper.GetComics(this.StartDate.Value.DateTime, this.EndDate.Value.DateTime, this._DLTokenSource.Token, progress);
             }
 
+            // Update latest DL info
+            await this.GetLatestDLDate();
+
             this.IsProcessing = false;
 
             if (this._DLTokenSource.Token.IsCancellationRequested)
@@ -459,7 +480,7 @@ namespace CAndHDL.ViewModel
             if (!this.CheckDates() && this.IsProcessing)
             {
                 DLIsPossible = false;
-            } 
+            }
             return (DLIsPossible && !this.IsProcessing);
         }
 
@@ -492,6 +513,24 @@ namespace CAndHDL.ViewModel
             this.Cancel.RaiseCanExecuteChanged();
         }
         #endregion controls
+
+        #region global processing
+        /// <summary>
+        /// Get the latest DL date
+        /// </summary>
+        private async Task GetLatestDLDate()
+        {
+            var latestComicInfo = await DownloadHelper.GetLatestDownload();
+            if (latestComicInfo == null)
+            {
+                this.LastDLDate = null;
+            }
+            else
+            {
+                this.LastDLDate = latestComicInfo.Date;
+            }
+        }
+        #endregion global processing
 
         #region event handling
         /// <summary>Event handler</summary>
